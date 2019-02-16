@@ -14,6 +14,8 @@ import java.util.List;
 @XmlRootElement(name = "settings")
 public class Settings {
 
+    public Settings() {}
+
     @XmlElement(name = "page")
     private PageSettings page;
 

@@ -11,6 +11,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "column")
 public class ColumnSettings {
 
+    public ColumnSettings() {}
+
     @XmlElement(name = "title")
     private String title;
 

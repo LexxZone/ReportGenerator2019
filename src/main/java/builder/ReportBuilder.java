@@ -9,29 +9,27 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * 2019-01-25
+ * 2019-02-16
  *
  * @author Alexey Dvoryaninov  ( lexxzone@gmail.com )
  */
 public class ReportBuilder {
 
-    private int pageHeight;
     private static int pageWidth;
-    private String  firstColumnTitle;
+    private static String lineDelimiter;
+    private static final String LINE_BREAKER = System.lineSeparator();
+    static final String lineIn = "| ";
+    static final String lineOut = " |" + LINE_BREAKER;
+    static final String lineSeparator = " | ";
+    static final String pageDelimiter = "~" + LINE_BREAKER;
+    private int pageHeight;
+    private String firstColumnTitle;
     private int firstColumnWidth;
-    private String  secondColumnTitle;
+    private String secondColumnTitle;
     private int secondColumnWidth;
-    private String  thirdColumnTitle;
+    private String thirdColumnTitle;
     private int thirdColumnWidth;
     private List<String> sourceData;
-    private StringBuilder finalReport;
-    final static String lineIn = "| ";
-    final static String lineOut = " |\n\r";
-    final static String lineSeparator = " | ";
-    final static String lineDelimiter = Stream.generate(() -> "-").limit(pageWidth).collect(Collectors.joining());
-    final static String pageDelimiter = "~";
-    //final static String endLine = "";
-
 
     public ReportBuilder(Settings settings, List<String> sourceData) {
         this.pageHeight = settings.getPage().getHeight();
@@ -43,169 +41,193 @@ public class ReportBuilder {
         this.thirdColumnTitle = settings.getColumns().get(2).getTitle();
         this.thirdColumnWidth = settings.getColumns().get(2).getWidth();
         this.sourceData = sourceData;
-        this.finalReport = new StringBuilder();
+        this.lineDelimiter = Stream.generate(() -> "-").limit(this.pageWidth).collect(Collectors.joining()) + LINE_BREAKER;
     }
 
-    public void createReport() {
+    public List<String> createReport() {
 
-        buildPage();
-
-        finalReport.append("");
-    }
-
-    private void buildPage() {
-
-        getHeader();
-
-
-        getBand();
-
-
-        finalReport.append("");
-
+        List<String> reportLines = getBand();
+        for (int i = 0; i < reportLines.size(); i += getPageHeight()) {
+            if (i != 0 && reportLines.get(i).equals(lineDelimiter)) {
+                reportLines.remove(i);
+            }
+            if (i != 0) {
+                reportLines.add(i, pageDelimiter);
+                reportLines.add(i + 1, getHeader());
+                reportLines.add(i + 2, lineDelimiter);
+            } else {
+                reportLines.add(i, getHeader());
+                reportLines.add(i + 1, lineDelimiter);
+            }
+        }
+        return reportLines;
     }
 
     private String getHeader() {
-        return new StringBuilder().
-                append(lineIn).
-                append(firstColumnTitle + getSpaceLine(firstColumnWidth - firstColumnTitle.length() - 1)).
-                append(lineSeparator).
-                append(secondColumnTitle + getSpaceLine(secondColumnWidth - secondColumnTitle.length() - 1)).
-                append(lineSeparator).
-                append(thirdColumnTitle + getSpaceLine(thirdColumnWidth - thirdColumnTitle.length() - 1)).
-                append(lineOut).
-                append(lineDelimiter).
-                toString();
+        return new StringBuilder()
+                .append(lineIn)
+                .append(firstColumnTitle + getSpaceLine(firstColumnWidth - firstColumnTitle.length()))
+                .append(lineSeparator)
+                .append(secondColumnTitle + getSpaceLine(secondColumnWidth - secondColumnTitle.length()))
+                .append(lineSeparator)
+                .append(thirdColumnTitle + getSpaceLine(thirdColumnWidth - thirdColumnTitle.length()))
+                .append(lineOut)
+                .toString();
     }
 
-    private StringBuilder getBand() {
-        StringBuilder bandString = new StringBuilder();
-
+    private List<String> getBand() {
+        List<String> band = new ArrayList<>();
         List<String> firstColumnList = new ArrayList<>();
         List<String> secondColumnList = new ArrayList<>();
         List<String> thirdColumnList = new ArrayList<>();
         int changeList = 1;
-        int maxLines = 1;
+        int maxLines;
         for (String single : sourceData) {
             if (changeList == 4) {
                 changeList = 1;
             }
             if (changeList == 1) {
-                checkAndFillCell(firstColumnList, single, firstColumnWidth);
-
+                firstColumnList = new ArrayList<>();
+                firstColumnList.addAll(splitStringToFewLines(single, firstColumnWidth, changeList));
                 changeList++;
-                System.out.println(bandString.toString());
                 continue;
             }
             if (changeList == 2) {
-
-                checkAndFillCell(secondColumnList, single, secondColumnWidth);
-
-                secondColumnList.add(single);
+                secondColumnList = new ArrayList<>();
+                secondColumnList.addAll(splitStringToFewLines(single, secondColumnWidth, changeList));
                 changeList++;
-                System.out.println(bandString.toString());
                 continue;
             }
             if (changeList == 3) {
-                thirdColumnList.add(single);
-
-                List<Integer> collSizes = Arrays.asList(firstColumnList.size(), secondColumnList.size(), thirdColumnList.size());
-
+                thirdColumnList = new ArrayList<>();
+                thirdColumnList.addAll(splitStringToFewLines(single, thirdColumnWidth, changeList));
+                List<Integer> collSizes =
+                        Arrays.asList(firstColumnList.size(), secondColumnList.size(), thirdColumnList.size());
                 maxLines = Collections.max(collSizes);
                 firstColumnList = fillColumnBySpaces(firstColumnList, maxLines, firstColumnWidth);
-                secondColumnList =  fillColumnBySpaces(secondColumnList, maxLines, secondColumnWidth);
+                secondColumnList = fillColumnBySpaces(secondColumnList, maxLines, secondColumnWidth);
                 thirdColumnList = fillColumnBySpaces(thirdColumnList, maxLines, thirdColumnWidth);
-                bandString.append(lineDelimiter);
+                if (!band.isEmpty()) {
+                    band.add(lineDelimiter);
+                }
+                for (int i = 0; i < maxLines; i++) {
+                    band.add(lineIn +
+                            firstColumnList.get(i) +
+                            lineSeparator +
+                            secondColumnList.get(i) +
+                            lineSeparator +
+                            thirdColumnList.get(i) +
+                            lineOut);
+                }
                 changeList++;
-                System.out.println(bandString.toString());
                 continue;
             }
-
         }
-
-        //List<String> firstColumnList = getColumn(firstColumnWidth);
-        //List<String> secondColumnList = getColumn(secondColumnWidth);
-        //List<String> thirdColumnList = getColumn(thirdColumnWidth);
-
-        // сливаем колонки в один бэнд
-       /* int i = 0;
-        while(i < maxLines - 3) {
-            bandString.append(firstColumnList.get(i++));
-            bandString.append(secondColumnList.get(i++));
-            bandString.append(thirdColumnList.get(i++));
-            bandString.append(endLine);
-        }*/
-
-        return bandString;
+        return band;
     }
 
     /**
-     * Разбивает срочку на несколько если она не умещается в ширину столбца.
-     * @param   singleLine - исходная строчка
-     * @param   columnWidth - ширина столбца
-     * @return  массив строк
+     * Разбивает срочку на несколько.
+     *
+     * @param singleLine  - исходная строчка
+     * @param columnWidth - ширина столбца
+     * @return массив строк
      */
-    private String[] splitStringToFewLines(String singleLine, int columnWidth) {
-        String[] stringList = singleLine.split("\\W+");
-
-        return stringList;
-    }
-
-    /**
-     * Проверяет, умещается ли строка в столбец по ширине. Если нет - разбивает на коллекцию строк. Возврщает обработанную коллекцию.
-     * @param columnList
-     * @param single
-     * @param columnWidth
-     * @return
-     */
-    private List<String> checkAndFillCell(List<String> columnList, String single, int columnWidth) {
-        //List<String> list;
-        if (single.length() - 2 < columnWidth) {
-            columnList.add(single + getSpaceLine(columnWidth - single.length()));
-        } else {
-            for (String line : splitStringToFewLines(single, columnWidth)) {
-                columnList.add(line);
+    private List<String> splitStringToFewLines(String singleLine, int columnWidth, int columnNumber) {
+        List<String> singleList = new ArrayList<>();
+        String rule;
+        switch (columnNumber) {
+            case 2:
+                rule = "(?<=/)|(?=/)";
+                break;
+            case 3:
+                rule = "\\w|(?<=-)|(?=-)|\\s";
+                break;
+            default:
+                rule = "";
+        }
+        String[] stringList = singleLine.split(rule);
+        if (stringList.length == 0) {
+            stringList = new String[]{singleLine};
+        }
+        StringBuilder fitLine = new StringBuilder();
+        for (String word : stringList) {
+            if (!word.equals(" ") || !word.isEmpty()) {
+                if (word.length() <= columnWidth) {
+                    if (isFitInCurrentLine(fitLine, word, columnWidth)) {
+                        fitLine.append(word);
+                        if (columnNumber == 3) {
+                            fitLine.append(" ");
+                        }
+                    } else {
+                        singleList.add(fitLine.toString().trim());
+                        fitLine = new StringBuilder();
+                        fitLine.append(word);
+                    }
+                } else {
+                    if (fitLine.length() > 0) {
+                        singleList.add(fitLine.toString().trim());
+                        fitLine = new StringBuilder();
+                    }
+                    while (word.length() > columnWidth) {
+                        singleList.add(word.substring(0, columnWidth));
+                        word = word.substring(columnWidth);
+                    }
+                    fitLine.append(word);
+                }
             }
-
-            splitStringToFewLines(single, columnWidth);
-            //String[] cellArray = single.split() // TODO здесь закончена логика
-
         }
-
-        return columnList;
+        if (fitLine.length() > 0) {
+            singleList.add(fitLine.toString().trim());
+        }
+        return singleList;
     }
 
+    /**
+     * Проверяет, поместится ли еще один элемент (слово/символ) в текущую строчку.
+     * @param fitLine       - Строка набора элементов по ширине столбца
+     * @param word          - слово/символ, который проверяется на возможность размещения в текущей строке столбца
+     * @param columnWidth   - ширина текущего столбца
+     * @return              - true (элемент умещается) или false (элемент не умещается)
+     */
+    private boolean isFitInCurrentLine(StringBuilder fitLine, String word, int columnWidth) {
+        return (fitLine.length() + word.length()) <= (columnWidth) ? true : false;
+    }
+
+    /**
+     * Заполняет существующие строки в столбце пробелами до ширины столбца, а потом и недостающие строки столбца.
+     *
+     * @param columnList коллекция имеющихся строк столбца
+     * @param maxLines   Макс. количество строк в бэнде
+     * @param width      ширина столбца
+     * @return коллекция заполенных строк
+     */
     private List<String> fillColumnBySpaces(List<String> columnList, int maxLines, int width) {
+        for (int i = 0; i < columnList.size(); i++) {
+            if (columnList.get(i).length() < width) {
+                columnList.set(i, columnList.get(i) + getSpaceLine(width - columnList.get(i).length()));
+            }
+        }
         if (columnList.size() < maxLines) {
-            for (int i = 0; i < maxLines - columnList.size(); i++) {
+            int colSize = columnList.size();
+            for (int i = 0; i <= maxLines - colSize; i++) {
                 columnList.add(getSpaceLine(width));
             }
         }
         return columnList;
     }
 
+    /**
+     * Заполняет строку ячейки пробелами на всю ширину.
+     *
+     * @param width ширина колонки
+     * @return стринга пробелов
+     */
     private String getSpaceLine(int width) {
         return Stream.generate(() -> " ").limit(width).collect(Collectors.joining());
     }
 
-    /*private List<String> getColumn(int width) {
-        List<String> column = new ArrayList<>();
-
-        return column;
-    }*/
-
-    private void getLine() {
-
-        getCell(thirdColumnWidth);
-
+    public int getPageHeight() {
+        return pageHeight;
     }
-
-    private void getCell(int width) {
-
-    }
-
-    private void getCell(String title) {
-
-    }
-
 }

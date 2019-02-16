@@ -11,6 +11,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "page")
 public class PageSettings {
 
+    public PageSettings() {}
+
     @XmlElement(name = "height")
     private int height;
 
