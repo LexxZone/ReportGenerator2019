@@ -1,8 +1,8 @@
-package parser;
+package generator.parser;
 
+import generator.parser.dto.Settings;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import parser.dto.Settings;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -14,7 +14,7 @@ import java.io.File;
  * @author Alexey Dvoryaninov  ( lexxzone@gmail.com )
  */
 public class XmlParser {
-    static final Logger rootLogger = LogManager.getRootLogger();
+    private static final org.apache.logging.log4j.Logger LOG = LogManager.getLogger(XmlParser.class.getName());
     private String settingsUrl;
 
     public XmlParser(String settingsUrl) {
@@ -27,11 +27,9 @@ public class XmlParser {
         try {
             jaxbContext = JAXBContext.newInstance(Settings.class);
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            Settings settings = (Settings) jaxbUnmarshaller.unmarshal(xmlFile);
-            System.out.println(settings);
-            return settings;
+            return (Settings) jaxbUnmarshaller.unmarshal(xmlFile);
         } catch (JAXBException e) {
-            rootLogger.error("LOG: Ошибка при чтения файла XML", e.getMessage());
+            LOG.error("Ошибка при чтения файла XML", e);
         }
         return null;
     }

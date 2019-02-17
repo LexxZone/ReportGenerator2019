@@ -52,6 +52,6 @@
 
 4) Пример вызова генератора
 
-java Generator.class settings.xml source-data.tsv example-report.txt
+java generator.Generator.class settings.xml source-data.tsv example-report.txt
 
 5) См. результат генерации и комментарии к нему в файле example-report.txt

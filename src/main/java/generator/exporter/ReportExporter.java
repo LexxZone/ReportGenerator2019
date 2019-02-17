@@ -1,8 +1,8 @@
-package exporter;
+package generator.exporter;
 
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class ReportExporter {
 
-    static final Logger rootLogger = LogManager.getRootLogger();
+   private static final org.apache.logging.log4j.Logger LOG = LogManager.getLogger(ReportExporter.class.getName());
     private List<String> report;
     private String fileName;
 
@@ -24,17 +24,17 @@ public class ReportExporter {
     public void export() {
         try {
             File finalReportFile = new File(this.fileName);
-            Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(finalReportFile), "UTF-16"));
+            Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(finalReportFile), StandardCharsets.UTF_16));
             for (String line : report) {
                 writer.write(line);
             }
             writer.flush();
             writer.close();
         } catch (IOException e) {
-            rootLogger.error("LOG: Ошибка записи файла", e.getMessage());
+            LOG.error("Ошибка записи файла", e);
 
         } catch (Exception e) {
-            rootLogger.error("LOG: Возникла ошибка", e.getMessage());
+            LOG.error("Возникла ошибка", e);
         }
     }
 }

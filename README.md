@@ -1,2 +1,2 @@
 # ReportGenerator2019
-Report Generator 2 (201902)
+Report generator.Generator 2 (201902)

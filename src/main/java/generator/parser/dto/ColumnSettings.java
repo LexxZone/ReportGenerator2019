@@ -1,4 +1,4 @@
-package parser.dto;
+package generator.parser.dto;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -8,19 +8,19 @@ import javax.xml.bind.annotation.XmlRootElement;
  *
  * @author Alexey Dvoryaninov  ( lexxzone@gmail.com )
  */
-@XmlRootElement(name = "page")
-public class PageSettings {
+@XmlRootElement(name = "column")
+public class ColumnSettings {
 
-    public PageSettings() {}
+    public ColumnSettings() {}
 
-    @XmlElement(name = "height")
-    private int height;
+    @XmlElement(name = "title")
+    private String title;
 
     @XmlElement(name = "width")
     private int width;
 
-    public int getHeight() {
-        return height;
+    public String getTitle() {
+        return title;
     }
 
     public int getWidth() {

@@ -1,9 +1,12 @@
-import builder.ReportBuilder;
-import exporter.ReportExporter;
-import parser.XmlParser;
-import parser.dto.Settings;
-import reader.SourceReader;
+package generator;
 
+import generator.builder.ReportBuilder;
+import generator.exporter.ReportExporter;
+import generator.parser.XmlParser;
+import generator.parser.dto.Settings;
+import generator.reader.SourceReader;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import java.util.List;
 
 /**
@@ -13,6 +16,7 @@ import java.util.List;
  */
 public class Generator {
 
+    private static final Logger LOG = LogManager.getLogger(Generator.class.getName());
     private final String settings;
     private final String source;
     private final String resultFile;
@@ -30,8 +34,7 @@ public class Generator {
     }
 
     public static void main(String[] args) {
-
-        Generator generator = new Generator("settings.xml", "source-data.tsv", "report.txt");
+        Generator generator = new Generator();
         XmlParser parser = new XmlParser(generator.getSettings());
         Settings set = parser.getSettings();
 
@@ -43,15 +46,15 @@ public class Generator {
         exporter.export();
     }
 
-    public String getSettings() {
+    private String getSettings() {
         return settings;
     }
 
-    public String getSource() {
+    private String getSource() {
         return source;
     }
 
-    public String getResultFile() {
+    private String getResultFile() {
         return resultFile;
     }
 }

@@ -1,9 +1,11 @@
-package reader;
+package generator.reader;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -13,7 +15,7 @@ import java.util.List;
  */
 public class SourceReader {
 
-    static final Logger rootLogger = LogManager.getRootLogger();
+    private static final Logger LOG = LogManager.getLogger(SourceReader.class.getName());
     private String sourceUrl;
 
     public SourceReader(String sourceUrl) {
@@ -25,36 +27,35 @@ public class SourceReader {
         BufferedReader TSVFile = null;
         try {
             TSVFile = new BufferedReader(
-                    new InputStreamReader(new FileInputStream(file), "UTF-16"));
-        } catch (UnsupportedEncodingException e) {
-            rootLogger.error("LOG: Неподдерживаемая кодировка файла", e.getMessage());
+                    new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_16));
         } catch (FileNotFoundException e) {
-            rootLogger.error("LOG: Файл не найден", e.getMessage());
+            LOG.error("Файл не найден", e);
         }
-        String dataRow;
-        ArrayList<String> sourceData = new ArrayList<String>();
+        String dataRow = null;
+        ArrayList<String> sourceData = new ArrayList<>();
         try {
             dataRow = TSVFile.readLine();
-        } catch (IOException e) {
-            rootLogger.error("LOG: Ошибка чтения файла", e.getMessage());
+        } catch (NullPointerException e) {
+            LOG.error("Ошибка чтения файла. NullPointer.", e);
+        }
+        catch (IOException e) {
+            LOG.error("Ошибка чтения файла", e);
             dataRow = null;
         }
-        while (dataRow != null) {
+        while (null != dataRow) {
             String[] wordsLineArray = dataRow.split("\t");
-            for (String item : wordsLineArray) {
-                sourceData.add(item);
-            }
+            Collections.addAll(sourceData, wordsLineArray);
             try {
                 dataRow = TSVFile.readLine();
             } catch (IOException e) {
-                rootLogger.error("LOG: Ошибка чтения файла", e.getMessage());
+                LOG.error("Ошибка чтения файла", e);
                 dataRow = null;
             }
         }
         try {
             TSVFile.close();
         } catch (IOException e) {
-            rootLogger.error("LOG: Ошибка при закрытии файла", e.getMessage());
+            LOG.error("Ошибка при закрытии файла", e);
         }
         return sourceData;
     }

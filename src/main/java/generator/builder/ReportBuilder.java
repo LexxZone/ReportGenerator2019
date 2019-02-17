@@ -1,6 +1,6 @@
-package builder;
+package generator.builder;
 
-import parser.dto.Settings;
+import generator.parser.dto.Settings;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,10 +18,10 @@ public class ReportBuilder {
     private static int pageWidth;
     private static String lineDelimiter;
     private static final String LINE_BREAKER = System.lineSeparator();
-    static final String lineIn = "| ";
-    static final String lineOut = " |" + LINE_BREAKER;
-    static final String lineSeparator = " | ";
-    static final String pageDelimiter = "~" + LINE_BREAKER;
+    private static final String lineIn = "| ";
+    private static final String lineOut = " |" + LINE_BREAKER;
+    private static final String lineSeparator = " | ";
+    private static final String pageDelimiter = "~" + LINE_BREAKER;
     private int pageHeight;
     private String firstColumnTitle;
     private int firstColumnWidth;
@@ -33,7 +33,7 @@ public class ReportBuilder {
 
     public ReportBuilder(Settings settings, List<String> sourceData) {
         this.pageHeight = settings.getPage().getHeight();
-        this.pageWidth = settings.getPage().getWidth();
+        pageWidth = settings.getPage().getWidth();
         this.firstColumnTitle = settings.getColumns().get(0).getTitle();
         this.firstColumnWidth = settings.getColumns().get(0).getWidth();
         this.secondColumnTitle = settings.getColumns().get(1).getTitle();
@@ -41,7 +41,7 @@ public class ReportBuilder {
         this.thirdColumnTitle = settings.getColumns().get(2).getTitle();
         this.thirdColumnWidth = settings.getColumns().get(2).getWidth();
         this.sourceData = sourceData;
-        this.lineDelimiter = Stream.generate(() -> "-").limit(this.pageWidth).collect(Collectors.joining()) + LINE_BREAKER;
+        lineDelimiter = Stream.generate(() -> "-").limit(pageWidth).collect(Collectors.joining()) + LINE_BREAKER;
     }
 
     public List<String> createReport() {
@@ -64,15 +64,13 @@ public class ReportBuilder {
     }
 
     private String getHeader() {
-        return new StringBuilder()
-                .append(lineIn)
-                .append(firstColumnTitle + getSpaceLine(firstColumnWidth - firstColumnTitle.length()))
-                .append(lineSeparator)
-                .append(secondColumnTitle + getSpaceLine(secondColumnWidth - secondColumnTitle.length()))
-                .append(lineSeparator)
-                .append(thirdColumnTitle + getSpaceLine(thirdColumnWidth - thirdColumnTitle.length()))
-                .append(lineOut)
-                .toString();
+        return  lineIn +
+                firstColumnTitle + getSpaceLine(firstColumnWidth - firstColumnTitle.length()) +
+                lineSeparator +
+                secondColumnTitle + getSpaceLine(secondColumnWidth - secondColumnTitle.length()) +
+                lineSeparator +
+                thirdColumnTitle + getSpaceLine(thirdColumnWidth - thirdColumnTitle.length()) +
+                lineOut;
     }
 
     private List<String> getBand() {
@@ -120,7 +118,6 @@ public class ReportBuilder {
                             lineOut);
                 }
                 changeList++;
-                continue;
             }
         }
         return band;
@@ -191,7 +188,7 @@ public class ReportBuilder {
      * @return              - true (элемент умещается) или false (элемент не умещается)
      */
     private boolean isFitInCurrentLine(StringBuilder fitLine, String word, int columnWidth) {
-        return (fitLine.length() + word.length()) <= (columnWidth) ? true : false;
+        return (fitLine.length() + word.length()) <= (columnWidth);
     }
 
     /**
@@ -227,7 +224,7 @@ public class ReportBuilder {
         return Stream.generate(() -> " ").limit(width).collect(Collectors.joining());
     }
 
-    public int getPageHeight() {
+    private int getPageHeight() {
         return pageHeight;
     }
 }
