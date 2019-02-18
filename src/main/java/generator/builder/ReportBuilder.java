@@ -85,19 +85,16 @@ public class ReportBuilder {
                 changeList = 1;
             }
             if (changeList == 1) {
-                firstColumnList = new ArrayList<>();
                 firstColumnList.addAll(splitStringToFewLines(single, firstColumnWidth, changeList));
                 changeList++;
                 continue;
             }
             if (changeList == 2) {
-                secondColumnList = new ArrayList<>();
                 secondColumnList.addAll(splitStringToFewLines(single, secondColumnWidth, changeList));
                 changeList++;
                 continue;
             }
             if (changeList == 3) {
-                thirdColumnList = new ArrayList<>();
                 thirdColumnList.addAll(splitStringToFewLines(single, thirdColumnWidth, changeList));
                 List<Integer> collSizes =
                         Arrays.asList(firstColumnList.size(), secondColumnList.size(), thirdColumnList.size());
